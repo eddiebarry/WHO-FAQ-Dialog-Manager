@@ -1,9 +1,28 @@
-# Get Question
-    # Check if id is present
+import sys
+import json
 
-# Extract Keywords
-    # merge with previous if value is not sentinel
 
-# Check if keywords are present, if yes answer
+class QuestionAsker:
+    def __init__(self, config_path):
+        f = open(config_path,)
+        self.config = json.load(f)
+        f.close()
+    
+    def process(self, query, keywords):
+        # check if satsified
 
-# If not, Store keywords, return question id, return specific question
+        # if not satisfied, add question in response
+        pass
+
+
+if __name__ == '__main__':
+    query = "Is it safe for my child to get Pneumonia ?"
+    boosting_tokens = {
+                    "keywords":["love"],    
+                    "subject1":["care"]
+                }
+
+    qa_config_path = "./WHO-FAQ-Dialog-Manager/QNA/question_asker_config.json"
+    QAsker = QuestionAsker(qa_config_path)
+    
+    QuestionAsker.process(query, boosting_tokens)
