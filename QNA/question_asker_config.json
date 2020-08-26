@@ -1,4 +1,10 @@
 {
-    "must" :"",
-    "question" : ""
+    "must": [
+        "Subject 2 - Vaccination / General",
+        "Vaccine",
+        "Who is writing this"
+    ],
+    "Subject 2 - Vaccination / General": "What topic is this most related to ?",
+    "Vaccine": "What vaccine are you talking about ?",
+    "Who is writing this": "For whom is this question being asked ?"
 }
