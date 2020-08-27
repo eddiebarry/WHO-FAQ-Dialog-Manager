@@ -3,17 +3,21 @@ import json
 
 
 class QuestionAsker:
-    def __init__(self, config_path):
+    def __init__(self, config_path, show_options=False, \
+        qa_keyword_path=None):
         f = open(config_path,)
         self.config = json.load(f)
         f.close()
+
+        if show_options and qa_keyword_path:
+            self.config = self.add_options(self.config, qa_keyword_path)
     
     def process(self, user_id, keywords):
         # check if all keywords in must are present in the keywords that 
         # are detected so far
         ask_more_question = False
         what_to_say = ""
-        
+
         for key in self.config["must"]:
             if key not in keywords:
                 what_to_say = self.config[key]
@@ -28,6 +32,21 @@ class QuestionAsker:
         }
 
         return not ask_more_question, resp
+
+    def add_options(self, config, qa_keyword_path):
+        f = open(qa_keyword_path,)
+        jsonObj = json.load(f)
+        
+        for key in config.keys():
+            if key == "must":
+                continue
+            new_option = config[key] + "\nYour options are : \n"
+            if key in jsonObj.keys():
+                for token in jsonObj[key]:
+                    new_option += token + ", "
+            config[key] = new_option.strip().strip(',')
+        
+        return config
 
 
 if __name__ == '__main__':
