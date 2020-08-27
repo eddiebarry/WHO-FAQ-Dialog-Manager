@@ -9,7 +9,8 @@ class QuestionAsker:
         f.close()
     
     def process(self, user_id, keywords):
-        # check if satsified
+        # check if all keywords in must are present in the keywords that 
+        # are detected so far
         ask_more_question = False
         what_to_say = ""
         
