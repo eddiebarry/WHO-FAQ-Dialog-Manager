@@ -1,4 +1,4 @@
-#Dialog Manager
+# Dialog Manager
 
 ## After being called with a user query from the main flask service,
 ## The dialog manager steps in and handles the flow of conversation
