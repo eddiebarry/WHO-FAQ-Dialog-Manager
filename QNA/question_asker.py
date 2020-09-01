@@ -1,7 +1,7 @@
 import sys
 import json
 
-
+# TODO : Document
 class QuestionAsker:
     def __init__(self, config_path, show_options=False, \
         qa_keyword_path=None):
@@ -12,6 +12,7 @@ class QuestionAsker:
         if show_options and qa_keyword_path:
             self.config = self.add_options(self.config, qa_keyword_path)
     
+    # TODO : Dont Ask questions which have already been asked
     def process(self, user_id, keywords):
         # check if all keywords in must are present in the keywords that 
         # are detected so far
@@ -50,6 +51,10 @@ class QuestionAsker:
 
 
 if __name__ == '__main__':
+    # Do not add options
+
+    # Set up a configuration of which fields must be included
+    # Along with what to say when no keyword from the field is detected
     config = {
         "must" :["Subject 2 - Vaccination / General", "Vaccine", \
             "Who is writing this"],
@@ -71,5 +76,7 @@ if __name__ == '__main__':
 
     qa_config_path = "./WHO-FAQ-Dialog-Manager/QNA/question_asker_config.json"
     QAsker = QuestionAsker(qa_config_path)
-    
+
     print(QuestionAsker.process(query, boosting_tokens))
+
+    # Add options
