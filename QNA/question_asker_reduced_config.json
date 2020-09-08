@@ -1,0 +1,10 @@
+{
+    "must": [
+        "Disease 1",
+        "Who is writing this"
+    ],
+    "Subject 2 - Vaccination / General": "What topic is this most related to ?",
+    "Vaccine": "okay, what vaccine are we talking about ?",
+    "Disease 1": "okay, What disease is this about ?",
+    "Who is writing this": "could you tell me for whom is this question being asked ?"
+}
