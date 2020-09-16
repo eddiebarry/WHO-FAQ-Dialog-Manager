@@ -1,7 +1,9 @@
 import sys
 import json
 from collections import defaultdict
-from .question_predictor import QuestionPredicter
+from common import preprocess
+from common import tokenize
+from question_predictor import QuestionPredicter
 
 class QuestionAsker:
     """
@@ -11,26 +13,38 @@ class QuestionAsker:
 
     #TODO: Add atributes and methods
     """
+    
+
     def __init__(self, config_path, show_options=False, \
-        qa_keyword_path=None, use_question_predicter=False):
-        f = open(config_path,)
+        qa_keyword_path=None, \
+        use_question_predicter_config=None):
+        
+        self.config_path=config_path
+        f = open(self.config_path,)
         self.config = json.load(f)
         f.close()
 
-        if show_options and qa_keyword_path:
+        self.show_options = show_options
+        self.qa_keyword_path = qa_keyword_path
+        if self.show_options and self.qa_keyword_path:
             self.config = self.add_options(self.config, qa_keyword_path)
         
         # Tracking which questions are asked so as to not ask them again
         self.questions_asked = defaultdict(list)
         
         # Check wether questions must be predicted
-        self.use_question_predicter = use_question_predicter
+        self.use_question_predicter = False
         self.question_predicter = None
-        if self.use_question_predicter:
-            self.question_predicter = QuestionPredicter()
+        
+        print(use_question_predicter_config,"is the config")
+        if use_question_predicter_config is not None:
+            print("inside config setup")
+            self.use_question_predicter = use_question_predicter_config[0]
+            model_path=use_question_predicter_config[1]
+            vectoriser_path=use_question_predicter_config[2]
+            self.question_predicter = QuestionPredicter(\
+                model_path, vectoriser_path)
 
-    
-    # TODO : Dont Ask questions which have already been asked
     def process(self, user_id, keywords, user_input=None):
         """
         Given a user ID, identifies which question must be asked,
@@ -39,14 +53,19 @@ class QuestionAsker:
         # First we check if the user has already been asked a question
         if user_id in self.questions_asked.keys():
             must = self.questions_asked[user_id]
+            print("using previous config")
         else:
+            print(self.use_question_predicter, "is the use question prediction")
             if self.use_question_predicter:
                 must = self.question_predicter.\
                     get_must_questions(user_input)
+                print("using predicted config")
             else:
                 must = self.config["must"]
+                print("using default config")
 
         self.questions_asked[user_id] = must
+        print("Questions that must be asked before keyword search are : ", must)
 
         # check if all keywords in must are present in the keywords that 
         # are detected so far
@@ -55,14 +74,27 @@ class QuestionAsker:
 
         for key in must:
             if key not in keywords:
-                what_to_say = self.config[key]
+                if key in self.config:
+                    what_to_say = self.config[key]
+                else:
+                    if self.show_options and self.qa_keyword_path:
+                        f = open(self.config_path,)
+                        self.config = json.load(f)
+                        f.close()
+
+                        self.config[key] = "what is the " + key + "?"  
+
+                        self.config = self.add_options(\
+                            self.config, self.qa_keyword_path)
+                    what_to_say = self.config[key]
+
                 ask_more_question = True
                 must.remove(key)
                 break
         
         #  Update so that question is not asked again
         self.questions_asked[user_id] = must
-        
+        print("Questions that must be asked after keyword search are : ", must)
 
         # if not satisfied, add question in response
         resp = {
@@ -70,6 +102,10 @@ class QuestionAsker:
             "what_to_say": what_to_say,
             "user_id": user_id,
         }
+
+        # If no more questions to be asked, remove all trace of user
+        if not ask_more_question:
+            self.questions_asked.pop(user_id)
 
         return not ask_more_question, resp
 
@@ -106,7 +142,7 @@ if __name__ == '__main__':
         "Who is writing this" : "For whom is this question being asked ?"
     }
 
-    with open('./WHO-FAQ-Dialog-Manager/QNA/question_asker_config.json', \
+    with open('./question_asker_config.json', \
         'w') as json_file:
         json.dump(config, json_file, indent=4) 
     
@@ -116,9 +152,18 @@ if __name__ == '__main__':
                     "subject1":["care"]
                 }
 
-    qa_config_path = "./WHO-FAQ-Dialog-Manager/QNA/question_asker_config.json"
+    qa_config_path = "./question_asker_config.json"
     QAsker = QuestionAsker(qa_config_path)
-
-    print(QAsker.process(query, 1,boosting_tokens))
-
+    print(QAsker.process(1,boosting_tokens,query))
     # Add options
+
+    query = "Is it safe for my child to get Polio ?"
+    print("This is the predicted questions")
+    extractor_json_path = \
+        "../../WHO-FAQ-Keyword-Engine/test_excel_data/curated_keywords_1500.json"
+    
+    use_question_predicter_config = [True, "./models.txt", "./vectoriser.txt"]
+    QAsker = QuestionAsker(qa_config_path, show_options=True, \
+        qa_keyword_path = extractor_json_path, \
+        use_question_predicter_config=use_question_predicter_config)
+    print(QAsker.process(10,boosting_tokens,query))

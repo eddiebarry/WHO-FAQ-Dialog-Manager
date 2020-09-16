@@ -18,15 +18,7 @@ else:
     
 nltk.download('punkt')
 nltk.download('stopwords')
-from nltk.tokenize import word_tokenize
-from nltk.tokenize import RegexpTokenizer
-from nltk.stem import PorterStemmer
-from nltk.stem import SnowballStemmer
-from nltk.corpus import stopwords
-from sklearn.metrics import recall_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score
+
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -35,26 +27,11 @@ from sklearn.naive_bayes import ComplementNB
 import sys
 import json
 from collections import defaultdict
+from common import preprocess
+from common import tokenize
 import pickle
 
-# preprocessing step:
-def preprocess(sentence):
-    return sentence
 
-porter_stemmer_instance = PorterStemmer()
-
-# tokenization step:
-def tokenize(preprocessed_sentence):
-    # tokenizing sentence:
-    token_list = []
-    tokens = word_tokenize(preprocessed_sentence)
-    for token in tokens:
-        # stemming tokens:
-        token = porter_stemmer_instance.stem(token)
-        # stop-word and punctuation removal:
-        if token not in stopwords.words('english') and token not in string.punctuation:
-            token_list.append(token)
-    return token_list
 
 # TODO : Document
 class QuestionPredicter:
