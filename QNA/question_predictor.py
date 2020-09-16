@@ -1,82 +1,101 @@
+import os
+import string
+import random
+import numpy as np
+import scipy.sparse as sp
+import pandas as pd
+from csv import reader
+
+import nltk
+import ssl
+
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+    
+nltk.download('punkt')
+nltk.download('stopwords')
+from nltk.tokenize import word_tokenize
+from nltk.tokenize import RegexpTokenizer
+from nltk.stem import PorterStemmer
+from nltk.stem import SnowballStemmer
+from nltk.corpus import stopwords
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import ComplementNB
+
 import sys
 import json
+from collections import defaultdict
+import pickle
+
+# preprocessing step:
+def preprocess(sentence):
+    return sentence
+
+porter_stemmer_instance = PorterStemmer()
+
+# tokenization step:
+def tokenize(preprocessed_sentence):
+    # tokenizing sentence:
+    token_list = []
+    tokens = word_tokenize(preprocessed_sentence)
+    for token in tokens:
+        # stemming tokens:
+        token = porter_stemmer_instance.stem(token)
+        # stop-word and punctuation removal:
+        if token not in stopwords.words('english') and token not in string.punctuation:
+            token_list.append(token)
+    return token_list
 
 # TODO : Document
-class QuestionAsker:
-    def __init__(self, config_path, show_options=False, \
-        qa_keyword_path=None):
-        f = open(config_path,)
-        self.config = json.load(f)
-        f.close()
+class QuestionPredicter:
+    """
+    Question predicter is the class that when given a user input,
+    predicts which questions we must ask
 
-        if show_options and qa_keyword_path:
-            self.config = self.add_options(self.config, qa_keyword_path)
-    
+    #TODO: Add atributes and methods
+    """
+    def __init__(self, class_dict_pth="./models.txt", \
+        vectoriser_pth="./vectoriser.txt"):
+        """
+        Given a diction of keywords and corresponding classifiers
+        which tell wether the keyword is necessary, we build a 
+        set of questions that must be asked to the user
+        """
+        self.class_dict = pickle.load(open(class_dict_pth, 'rb'))
+        self.vectoriser = pickle.load(open(vectoriser_pth,'rb'))
+
     # TODO : Dont Ask questions which have already been asked
-    def process(self, user_id, keywords):
-        # check if all keywords in must are present in the keywords that 
-        # are detected so far
-        ask_more_question = False
-        what_to_say = ""
+    def get_must_questions(self, user_input):
+        """
+        Given a user input identified which questions must be asked
+        """
+        inp = [user_input]
+        model_inp = self.vectoriser.transform(inp)
+        print(model_inp)
 
-        for key in self.config["must"]:
-            if key not in keywords:
-                what_to_say = self.config[key]
-                ask_more_question = True
-                break
-
-        # if not satisfied, add question in response
-        resp = {
-            "ask_more_question": ask_more_question,
-            "what_to_say": what_to_say,
-            "user_id": user_id,
-        }
-
-        return not ask_more_question, resp
-
-    def add_options(self, config, qa_keyword_path):
-        f = open(qa_keyword_path,)
-        jsonObj = json.load(f)
+        must = []
+        for key in self.class_dict:
+            pred = self.class_dict[key].predict(model_inp)
+            if pred == 1:
+                must.append(key)
         
-        for key in config.keys():
-            if key == "must":
-                continue
-            new_option = config[key] + "\nYour options are : \n"
-            if key in jsonObj.keys():
-                for token in jsonObj[key]:
-                    new_option += token + ", "
-            config[key] = new_option.strip().strip(',')
-        
-        return config
+        return must
+
 
 
 if __name__ == '__main__':
-    # Do not add options
+    qpred = QuestionPredicter()
+    must = qpred.get_must_questions("Please save my child")
+    print(must, 'all these questions must be asked')
 
-    # Set up a configuration of which fields must be included
-    # Along with what to say when no keyword from the field is detected
-    config = {
-        "must" :["Subject 2 - Vaccination / General", "Vaccine", \
-            "Who is writing this"],
-        "Subject 2 - Vaccination / General" : \
-            "What topic is this most related to ?",
-        "Vaccine" : "What vaccine are you talking about ?",
-        "Who is writing this" : "For whom is this question being asked ?"
-    }
 
-    with open('./WHO-FAQ-Dialog-Manager/QNA/question_asker_config.json', \
-        'w') as json_file:
-        json.dump(config, json_file, indent=4) 
-    
-    query = "Is it safe for my child to get Pneumonia ?"
-    boosting_tokens = {
-                    "keywords":["love"],    
-                    "subject1":["care"]
-                }
-
-    qa_config_path = "./WHO-FAQ-Dialog-Manager/QNA/question_asker_config.json"
-    QAsker = QuestionAsker(qa_config_path)
-
-    print(QAsker.process(query, boosting_tokens))
-
-    # Add options
