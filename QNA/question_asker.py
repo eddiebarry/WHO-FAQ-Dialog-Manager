@@ -77,17 +77,8 @@ class QuestionAsker:
                 if key in self.config:
                     what_to_say = self.config[key]
                 else:
-                    if self.show_options and self.qa_keyword_path:
-                        f = open(self.config_path,)
-                        self.config = json.load(f)
-                        f.close()
-
-                        self.config[key] = "what is the " + key + "?"  
-
-                        self.config = self.add_options(\
-                            self.config, self.qa_keyword_path)
-                    what_to_say = self.config[key]
-
+                    what_to_say = "We broke something that must never be broken"\
+                        + "WHOA-Dialog-Manager/QNA/question_asker.py, line 80"
                 ask_more_question = True
                 must.remove(key)
                 break
@@ -116,15 +107,15 @@ class QuestionAsker:
         f = open(qa_keyword_path,)
         jsonObj = json.load(f)
         
-        for key in config.keys():
-            if key == "must":
-                continue
-            new_option = config[key] + "\nYour options are : \n"
-            if key in jsonObj.keys():
-                for token in jsonObj[key]:
-                    new_option += token + ", "
+        for key in jsonObj.keys():
+            if key in config.keys():
+                new_option = config[key] + "\nYour options are : \n"
+            else:
+                new_option = "what is the " + key + "?"  
+            for token in jsonObj[key]:
+                new_option += token + ", "
             config[key] = new_option.strip().strip(',')
-        
+
         return config
 
 
