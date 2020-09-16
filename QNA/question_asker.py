@@ -57,7 +57,7 @@ class QuestionAsker:
             if key not in keywords:
                 what_to_say = self.config[key]
                 ask_more_question = True
-                must.erase(key)
+                must.remove(key)
                 break
         
         #  Update so that question is not asked again

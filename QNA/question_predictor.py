@@ -97,5 +97,3 @@ if __name__ == '__main__':
     qpred = QuestionPredicter()
     must = qpred.get_must_questions("Please save my child")
     print(must, 'all these questions must be asked')
-
-
