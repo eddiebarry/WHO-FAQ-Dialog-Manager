@@ -1,16 +1,8 @@
 import sys
 import json
-from collections import defaultdict
 
 # TODO : Document
 class QuestionAsker:
-    """
-    Question asker is the class, which given a config file,
-    and detected keywords for a particular question, will predict the 
-    next question we want to ask the user
-
-    #TODO: Add atributes and methods
-    """
     def __init__(self, config_path, show_options=False, \
         qa_keyword_path=None):
         f = open(config_path,)
@@ -19,16 +11,9 @@ class QuestionAsker:
 
         if show_options and qa_keyword_path:
             self.config = self.add_options(self.config, qa_keyword_path)
-        
-        # Tracking which questions are asked so as to not ask them again
-        self.questions_asked = defaultdict(list)
     
     # TODO : Dont Ask questions which have already been asked
     def process(self, user_id, keywords):
-        """
-        Given a user ID, identifies which question must be asked,
-        and adds them to what to say
-        """
         # check if all keywords in must are present in the keywords that 
         # are detected so far
         ask_more_question = False
