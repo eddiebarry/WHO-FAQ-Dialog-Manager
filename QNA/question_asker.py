@@ -1,5 +1,6 @@
 import sys
 import json
+import copy
 from collections import defaultdict
 from common import preprocess
 from common import tokenize
@@ -81,7 +82,7 @@ class QuestionAsker:
                     get_must_questions(user_input)
                 print("using predicted config")
             else:
-                must = self.config["must"]
+                must = copy.deepcopy(self.config["must"])
                 print("using default config")
             must.append("Catch All")
 
@@ -115,8 +116,6 @@ class QuestionAsker:
         print("Questions that must be asked after keyword search are : ", must)
 
         
-
-
         # if not satisfied, add question in response
         resp = {
             "ask_more_question": ask_more_question,
