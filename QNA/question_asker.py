@@ -144,6 +144,7 @@ class QuestionAsker:
                 new_option = "what is the " + key + "?"  
             for token in jsonObj[key]:
                 new_option += token + ", "
+            new_option += "none"
             config[key] = new_option.strip().strip(',')
 
         return config
