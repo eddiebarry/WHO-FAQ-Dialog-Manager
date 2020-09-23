@@ -83,6 +83,7 @@ class QuestionAsker:
             else:
                 must = self.config["must"]
                 print("using default config")
+            must.append("Catch All")
 
         self.questions_asked[user_id] = must
         print("Questions that must be asked before keyword search are : ", must)
@@ -92,8 +93,14 @@ class QuestionAsker:
         ask_more_question = False
         what_to_say = ""
 
+        for key in keywords:
+            if key in must:
+                must.remove(key)
+
         for key in must:
             if key not in keywords:
+                if key == "Catch All" and len(must)>1:
+                    continue
                 if key in self.config:
                     what_to_say = self.config[key]
                 else:
@@ -106,6 +113,9 @@ class QuestionAsker:
         #  Update so that question is not asked again
         self.questions_asked[user_id] = must
         print("Questions that must be asked after keyword search are : ", must)
+
+        
+
 
         # if not satisfied, add question in response
         resp = {
@@ -150,7 +160,8 @@ if __name__ == '__main__':
         "Subject 2 - Vaccination / General" : \
             "What topic is this most related to ?",
         "Vaccine" : "What vaccine are you talking about ?",
-        "Who is writing this" : "For whom is this question being asked ?"
+        "Who is writing this" : "For whom is this question being asked ?",
+        "Catch All": "Is there any additional information you could help us with ?"
     }
 
     with open('./question_asker_config.json', \
@@ -181,4 +192,45 @@ if __name__ == '__main__':
     QAsker = QuestionAsker(qa_config_path, show_options=True, \
         qa_keyword_path = extractor_json_path, \
         use_question_predicter_config=use_question_predicter_config)
-    print(QAsker.process(10,boosting_tokens,query))
+    print(QAsker.process(2,boosting_tokens,query))
+
+    # Write test for catch all
+    print('$'*80)
+    print("This is the catch all")
+    config = {
+        "must" :["Subject 2 - Vaccination / General", "Vaccine", \
+            "Who is writing this"],
+        "Subject 2 - Vaccination / General" : \
+            "What topic is this most related to ?",
+        "Vaccine" : "What vaccine are you talking about ?",
+        "Who is writing this" : "For whom is this question being asked ?",
+        "Catch All": "Is there any additional information you could help us with ?"
+    }
+    qa_config_path = "./question_asker_test_config.json"
+
+    with open(qa_config_path, \
+        'w') as json_file:
+        json.dump(config, json_file, indent=4) 
+    
+    query = "Is it safe for my child to get Polio ?"
+    extractor_json_path = \
+        "../../WHO-FAQ-Keyword-Engine/test_excel_data/curated_keywords_1500.json"
+    
+    use_question_predicter_config = [
+            False,               #use question predicter
+            "./models.txt",     #model path
+            "./vectoriser.txt"  #vectoriser path
+        ]
+
+    boosting_tokens = {
+                    "Subject 2 - Vaccination / General":["safety"],    
+                    "Vaccine":["polio"],
+                    "Who is writing this":["child"],
+                }
+
+    QAsker = QuestionAsker(qa_config_path, show_options=True, \
+        qa_keyword_path = extractor_json_path, \
+        use_question_predicter_config=use_question_predicter_config)
+    
+    print("This is the predicted questions")
+    print(QAsker.process(3,boosting_tokens,query))
