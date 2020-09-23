@@ -11,14 +11,36 @@ class QuestionAsker:
     and detected keywords for a particular question, will predict the 
     next question we want to ask the user
 
-    #TODO: Add atributes and methods
+    Attributes
+    ----------
+    config_path : String
+        A Lucene Analyzer for preprocessing text data
+
+    Methods
+    -------
+    __init__(analyzer, synonym_config, synonym_boost_val)
+        The init method takes an analyzer which is used while parsing a
+        user query into a lucene query as well as sets wether synonyms
+        must be used. If synonym expansion is used, their boost value
+        is also taken
+    
+    build_query(query_string, boosting_tokens, query_type, default_field)
+        Takes a user query, takes a dictionary of boosting tokens and
+        generates a lucene query where tokens are boosted
+
+    get_or_query_string(query_string, boosting_tokens, boost_val)
+        In lucene, OR queries are queries that may contain the search terms
+        Having the exact search terms is not a strict necessity
+
+        This method generates a OR query for the given boosting tokens
     """
     
-
     def __init__(self, config_path, show_options=False, \
         qa_keyword_path=None, \
         use_question_predicter_config=None):
         
+        # Read the config file which specifies the questions that must
+        # be cumpolsorily asked
         self.config_path=config_path
         f = open(self.config_path,)
         self.config = json.load(f)
@@ -36,9 +58,7 @@ class QuestionAsker:
         self.use_question_predicter = False
         self.question_predicter = None
         
-        print(use_question_predicter_config,"is the config")
         if use_question_predicter_config is not None:
-            print("inside config setup")
             self.use_question_predicter = use_question_predicter_config[0]
             model_path=use_question_predicter_config[1]
             vectoriser_path=use_question_predicter_config[2]
@@ -153,7 +173,11 @@ if __name__ == '__main__':
     extractor_json_path = \
         "../../WHO-FAQ-Keyword-Engine/test_excel_data/curated_keywords_1500.json"
     
-    use_question_predicter_config = [True, "./models.txt", "./vectoriser.txt"]
+    use_question_predicter_config = [
+            True,               #use question predicter
+            "./models.txt",     #model path
+            "./vectoriser.txt"  #vectoriser path
+        ]
     QAsker = QuestionAsker(qa_config_path, show_options=True, \
         qa_keyword_path = extractor_json_path, \
         use_question_predicter_config=use_question_predicter_config)
