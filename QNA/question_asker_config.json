@@ -1,11 +1,11 @@
 {
     "must": [
         "Subject 2 - Vaccination / General",
-        "Vaccine",
+        "Vaccine 1",
         "Who is writing this"
     ],
     "Subject 2 - Vaccination / General": "What topic is this most related to ?",
-    "Vaccine": "What vaccine are you talking about ?",
+    "Vaccine 1": "What vaccine are you talking about ?",
     "Who is writing this": "For whom is this question being asked ?",
     "Catch All": "Is there any additional information you could help us with ?"
 }

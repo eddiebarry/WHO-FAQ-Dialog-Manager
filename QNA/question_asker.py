@@ -92,7 +92,8 @@ class QuestionAsker:
         # check if all keywords in must are present in the keywords that 
         # are detected so far
         ask_more_question = False
-        what_to_say = ""
+        what_to_say_init = ""
+        what_to_say_options = ""
 
         for key in keywords:
             if key in must:
@@ -102,11 +103,17 @@ class QuestionAsker:
             if key not in keywords:
                 if key == "Catch All" and len(must)>1:
                     continue
+
                 if key in self.config:
-                    what_to_say = self.config[key]
+                    what_to_say_init = self.config[key][0]
+                    what_to_say_options = self.config[key][1]
                 else:
-                    what_to_say = "We broke something that must never be broken"\
+                    what_to_say_init = "We broke something that must never be broken"\
                         + "WHOA-Dialog-Manager/QNA/question_asker.py, line 80"
+                if key == "Catch All":
+                    what_to_say_init = self.config[key]
+                    what_to_say_options = "none, Yes i wanted to add ..."
+
                 ask_more_question = True
                 must.remove(key)
                 break
@@ -119,7 +126,10 @@ class QuestionAsker:
         # if not satisfied, add question in response
         resp = {
             "ask_more_question": ask_more_question,
-            "what_to_say": what_to_say,
+            "what_to_say": {
+                "heading": what_to_say_init,
+                "options": what_to_say_options,
+            },
             "user_id": user_id,
         }
 
@@ -138,13 +148,20 @@ class QuestionAsker:
         
         for key in jsonObj.keys():
             if key in config.keys():
-                new_option = config[key] + "\nYour options are : \n"
+                new_option = "## " + config[key] 
             else:
-                new_option = "what is the " + key + "?"  
-            for token in jsonObj[key]:
+                new_option = "## what is the " + key + "?"  
+            new_option += "\nYour options are : \n"
+            new_option += "none, "
+            for token in jsonObj[key][:3]:
                 new_option += token + ", "
-            new_option += "none"
-            config[key] = new_option.strip().strip(',')
+            new_option = new_option.strip().strip(',')
+
+            extra_option = ""
+            for token in jsonObj[key][3:]:
+                extra_option += token + ", "
+            extra_option = extra_option.strip().strip(',')
+            config[key] = [new_option, extra_option]
 
         return config
 
