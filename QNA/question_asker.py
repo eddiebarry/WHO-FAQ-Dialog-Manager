@@ -199,7 +199,7 @@ if __name__ == '__main__':
     query = "Is it safe for my child to get Polio ?"
     print("This is the predicted questions")
     extractor_json_path = \
-        "../../WHO-FAQ-Keyword-Engine/test_excel_data/curated_keywords_1500.json"
+        "../../WHO-FAQ-Keyword-Engine/keyword_config/curated_keywords_1500.json"
     
     use_question_predicter_config = [
             True,               #use question predicter
@@ -231,7 +231,7 @@ if __name__ == '__main__':
     
     query = "Is it safe for my child to get Polio ?"
     extractor_json_path = \
-        "../../WHO-FAQ-Keyword-Engine/test_excel_data/curated_keywords_1500.json"
+        "../../WHO-FAQ-Keyword-Engine/keyword_config/curated_keywords_1500.json"
     
     use_question_predicter_config = [
             False,               #use question predicter
