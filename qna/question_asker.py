@@ -109,7 +109,7 @@ class QuestionAsker:
                     what_to_say_options = self.config[key][1]
                 else:
                     what_to_say_init = "We broke something that must never be broken"\
-                        + "WHOA-Dialog-Manager/QNA/question_asker.py, line 80"
+                        + "WHOA-Dialog-Manager/qna/question_asker.py, line 80"
                 if key == "Catch All":
                     what_to_say_init = self.config[key]
                     what_to_say_options = "none, Yes i wanted to add ..."
