@@ -112,7 +112,7 @@ class QuestionAsker:
                         + "WHOA-Dialog-Manager/qna/question_asker.py, line 80"
                 if key == "Catch All":
                     what_to_say_init = self.config[key]
-                    what_to_say_options = "none, Yes i wanted to add ..."
+                    what_to_say_options = "none, Yes i wanted to add ... , not really, yes, no"
 
                 ask_more_question = True
                 must.remove(key)
@@ -121,7 +121,6 @@ class QuestionAsker:
         #  Update so that question is not asked again
         self.questions_asked[user_id] = must
         print("Questions that must be asked after keyword search are : ", must)
-
         
         # if not satisfied, add question in response
         resp = {
@@ -132,6 +131,11 @@ class QuestionAsker:
             },
             "user_id": user_id,
         }
+
+        # split into options
+        for idx,x in enumerate(what_to_say_options.split(',')):
+            new_title = "option_"+str(idx)
+            resp['what_to_say'][new_title] = x.strip()
 
         # If no more questions to be asked, remove all trace of user
         if not ask_more_question:
@@ -148,17 +152,13 @@ class QuestionAsker:
         
         for key in jsonObj.keys():
             if key in config.keys():
-                new_option = "## " + config[key] 
+                new_option = config[key] 
             else:
-                new_option = "## what is the " + key + "?"  
-            new_option += "\nYour options are : \n"
-            new_option += "none, "
-            for token in jsonObj[key][:3]:
-                new_option += token + ", "
-            new_option = new_option.strip().strip(',')
+                new_option = "what is the " + key + "?"  
+            # new_option += "\nYour options are : \n"
 
-            extra_option = ""
-            for token in jsonObj[key][3:]:
+            extra_option = "none, "
+            for token in jsonObj[key]:
                 extra_option += token + ", "
             extra_option = extra_option.strip().strip(',')
             config[key] = [new_option, extra_option]
