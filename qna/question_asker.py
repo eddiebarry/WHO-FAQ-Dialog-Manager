@@ -99,6 +99,8 @@ class QuestionAsker:
             if key in must:
                 must.remove(key)
 
+        asking_catch_all = False
+        first_question   = False
         for key in must:
             if key not in keywords:
                 if key == "Catch All" and len(must)>1:
@@ -111,9 +113,11 @@ class QuestionAsker:
                     what_to_say_init = "We broke something that must never be broken"\
                         + "WHOA-Dialog-Manager/qna/question_asker.py, line 80"
                 if key == "Catch All":
+                    asking_catch_all = True
                     what_to_say_init = self.config[key]
-                    what_to_say_options = "none, Yes i wanted to add ... , not really, yes, no"
+                    what_to_say_options = "none, Yes"
 
+                first_question =  (key == self.config["must"][0] or first_question)
                 ask_more_question = True
                 must.remove(key)
                 break
@@ -130,6 +134,8 @@ class QuestionAsker:
                 "options": what_to_say_options,
             },
             "user_id": user_id,
+            "ask_catch_all": asking_catch_all,
+            "first_question": first_question
         }
 
         # split into options
