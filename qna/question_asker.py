@@ -19,21 +19,6 @@ class QuestionAsker:
 
     Methods
     -------
-    __init__(analyzer, synonym_config, synonym_boost_val)
-        The init method takes an analyzer which is used while parsing a
-        user query into a lucene query as well as sets wether synonyms
-        must be used. If synonym expansion is used, their boost value
-        is also taken
-    
-    build_query(query_string, boosting_tokens, query_type, default_field)
-        Takes a user query, takes a dictionary of boosting tokens and
-        generates a lucene query where tokens are boosted
-
-    get_or_query_string(query_string, boosting_tokens, boost_val)
-        In lucene, OR queries are queries that may contain the search terms
-        Having the exact search terms is not a strict necessity
-
-        This method generates a OR query for the given boosting tokens
     """
     
     def __init__(self, config_path, show_options=False, \
