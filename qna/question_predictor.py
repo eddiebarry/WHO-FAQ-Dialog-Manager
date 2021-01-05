@@ -41,15 +41,18 @@ class QuestionPredicter:
 
     #TODO: Add atributes and methods
     """
-    def __init__(self, class_dict_pth="./models.txt", \
-        vectoriser_pth="./vectoriser.txt"):
+    def __init__(self, class_dict_pth="/usr/src/WHOA-FAQ-Answer-Project/WHO-FAQ-Dialog-Manager/qna/models.txt", \
+        vectoriser_pth="/usr/src/WHOA-FAQ-Answer-Project/WHO-FAQ-Dialog-Manager/qna/vectoriser.txt"):
         """
         Given a diction of keywords and corresponding classifiers
         which tell wether the keyword is necessary, we build a 
         set of questions that must be asked to the user
         """
-        self.class_dict = pickle.load(open(class_dict_pth, 'rb'))
-        self.vectoriser = pickle.load(open(vectoriser_pth,'rb'))
+        with open(class_dict_pth, 'rb') as f:
+            self.class_dict = pickle.load(f)
+        
+        with open(vectoriser_pth, 'rb') as f:
+            self.vectoriser = pickle.load(f)
 
     # TODO : Dont Ask questions which have already been asked
     def get_must_questions(self, user_input):

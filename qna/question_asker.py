@@ -46,10 +46,11 @@ class QuestionAsker:
         
         if use_question_predicter_config is not None:
             self.use_question_predicter = use_question_predicter_config[0]
-            model_path=use_question_predicter_config[1]
-            vectoriser_path=use_question_predicter_config[2]
-            self.question_predicter = QuestionPredicter(\
-                model_path, vectoriser_path)
+            if self.use_question_predicter:
+                model_path=use_question_predicter_config[1]
+                vectoriser_path=use_question_predicter_config[2]
+                self.question_predicter = QuestionPredicter(\
+                    model_path, vectoriser_path)
 
     def process(self, user_id, keywords, user_input=None):
         """
