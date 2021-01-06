@@ -129,9 +129,9 @@ class QuestionAsker:
             new_title = "option_"+str(idx)
             resp['what_to_say'][new_title] = x.strip()
 
-        # If no more questions to be asked, remove all trace of user
-        if not ask_more_question:
-            self.questions_asked.pop(user_id)
+        # # If no more questions to be asked, remove all trace of user
+        # if not ask_more_question:
+        #     self.questions_asked.pop(user_id)
 
         return not ask_more_question, resp
 
@@ -147,9 +147,8 @@ class QuestionAsker:
                 new_option = config[key] 
             else:
                 new_option = "what is the " + key + "?"  
-            # new_option += "\nYour options are : \n"
-
             extra_option = "none, "
+            
             for token in jsonObj[key]:
                 extra_option += token + ", "
             extra_option = extra_option.strip().strip(',')
