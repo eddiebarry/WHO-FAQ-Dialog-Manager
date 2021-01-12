@@ -4,7 +4,7 @@ import copy
 from collections import defaultdict
 from common import preprocess
 from common import tokenize
-from question_predictor import QuestionPredicter
+
 
 class QuestionAsker:
     """
@@ -45,6 +45,7 @@ class QuestionAsker:
         self.question_predicter = None
         
         if use_question_predicter_config is not None:
+            from question_predictor import QuestionPredicter
             self.use_question_predicter = use_question_predicter_config[0]
             if self.use_question_predicter:
                 model_path=use_question_predicter_config[1]
