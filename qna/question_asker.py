@@ -1,6 +1,8 @@
 import sys
 import json
 import copy
+from os import listdir
+from os.path import join as os_path_join
 from collections import defaultdict
 from common import preprocess
 from common import tokenize
@@ -21,21 +23,40 @@ class QuestionAsker:
     -------
     """
     
-    def __init__(self, config_path, show_options=False, \
-        qa_keyword_path=None, \
+    def __init__(self, config_path, show_options=False, qa_keyword_path=None,
         use_question_predicter_config=None):
         
         # Read the config file which specifies the questions that must
         # be cumpolsorily asked
+
+        # TODO: make project_id and version_id mandatory removing the following:
+        default_filename = 'question_asker_config.json'
+
         self.config_path=config_path
-        f = open(self.config_path,)
-        self.config = json.load(f)
-        f.close()
+        self.config = {}
+        for filename in listdir(self.config_path):
+            if filename.endswith('.json'):
+
+                # TODO: make project_id and version_id mandatory removing the following:
+                if filename == default_filename:
+                    continue
+                    
+                project_id, version_id = filename.split('_')[:2]
+                self.config[project_id] = self.config.setdefault(project_id, {})
+                with open(os_path_join(self.config_path, filename), 'r') as f:
+                    self.config[project_id][version_id] = json.load(f)
+        
+        # TODO: make project_id and version_id mandatory removing the following:
+        with open(os_path_join(config_path, default_filename), 'r') as f:
+            self.config['default'] = json.load(f)
 
         self.show_options = show_options
         self.qa_keyword_path = qa_keyword_path
         if self.show_options and self.qa_keyword_path:
-            self.config = self.add_options(self.config, qa_keyword_path)
+            self.config = self.add_options(
+                config=self.config,
+                qa_keyword_path=qa_keyword_path
+            )
         
         # Tracking which questions are asked so as to not ask them again
         self.questions_asked = defaultdict(list)
@@ -53,7 +74,7 @@ class QuestionAsker:
                 self.question_predicter = QuestionPredicter(\
                     model_path, vectoriser_path)
 
-    def process(self, user_id, keywords, user_input=None):
+    def process(self, user_id, keywords, project_id, version_id, user_input=None):
         """
         Given a user ID, identifies which question must be asked,
         and adds them to what to say
@@ -69,7 +90,15 @@ class QuestionAsker:
                     get_must_questions(user_input)
                 print("using predicted config")
             else:
-                must = copy.deepcopy(self.config["must"])
+
+                if (project_id != None) and (version_id != None): # TODO: make project_id and version_id mandatory mandatory always executing the 'if' content:
+                    
+                    must = copy.deepcopy(self.config[project_id][version_id]["must"])
+
+                else: # TODO: make project_id and version_id mandatory removing the following 'else' block:
+                    
+                    must = copy.deepcopy(self.config['default']["must"])
+
                 print("using default config")
             must.append("Catch All")
 
@@ -93,21 +122,39 @@ class QuestionAsker:
                 if key == "Catch All" and len(must)>1:
                     continue
 
-                if key in self.config:
-                    what_to_say_init = self.config[key][0]
-                    what_to_say_options = self.config[key][1]
-                else:
-                    what_to_say_init = "We broke something that must never be broken"\
-                        + "WHOA-Dialog-Manager/qna/question_asker.py, line 80"
-                if key == "Catch All":
-                    asking_catch_all = True
-                    what_to_say_init = self.config[key]
-                    what_to_say_options = "none, Yes"
+                if (project_id != None) and (version_id != None): # TODO: make project_id and version_id mandatory mandatory always executing the 'if' content:
+                    
+                    if key in self.config[project_id][version_id]:
+                        what_to_say_init = self.config[project_id][version_id][key][0]
+                        what_to_say_options = self.config[project_id][version_id][key][1]
+                    else:
+                        what_to_say_init = "We broke something that must never be broken"\
+                            + "WHOA-Dialog-Manager/qna/question_asker.py, line 80"
+                    if key == "Catch All":
+                        asking_catch_all = True
+                        what_to_say_init = self.config[project_id][version_id][key]
+                        what_to_say_options = "none, Yes"
+                    first_question =  (key == self.config[project_id][version_id]["must"][0] or first_question)
+                    ask_more_question = True
+                    must.remove(key)
+                    break
 
-                first_question =  (key == self.config["must"][0] or first_question)
-                ask_more_question = True
-                must.remove(key)
-                break
+                else: # TODO: make project_id and version_id mandatory removing the following 'else' block:
+                    
+                    if key in self.config['default']:
+                        what_to_say_init = self.config['default'][key][0]
+                        what_to_say_options = self.config['default'][key][1]
+                    else:
+                        what_to_say_init = "We broke something that must never be broken"\
+                            + "WHOA-Dialog-Manager/qna/question_asker.py, line 80"
+                    if key == "Catch All":
+                        asking_catch_all = True
+                        what_to_say_init = self.config['default'][key]
+                        what_to_say_options = "none, Yes"
+                    first_question =  (key == self.config['default']["must"][0] or first_question)
+                    ask_more_question = True
+                    must.remove(key)
+                    break
         
         #  Update so that question is not asked again
         self.questions_asked[user_id] = must
@@ -140,20 +187,62 @@ class QuestionAsker:
         """
         Shows which options are possible to the end user
         """
-        f = open(qa_keyword_path,)
-        jsonObj = json.load(f)
+        # loading all keyword dictionaries, for all the available project ids
+        # and version ids, in addition to the default ones:
+
+        # TODO: make project_id and version_id mandatory removing the following:
+        default_filename = 'unique_keywords.json'
+
+        temp = {}
+        for filename in listdir(qa_keyword_path):
+            if filename.endswith('.json'):
+
+                # TODO: make project_id and version_id mandatory removing the following:
+                if filename == default_filename:
+                    continue
+
+                project_id, version_id = filename.split('_')[:2]
+                temp[project_id] = temp.setdefault(project_id, {})
+                with open(os_path_join(qa_keyword_path, filename), 'r') as f:
+                    temp[project_id][version_id] = json.load(f)
+
+        # TODO: make project_id and version_id mandatory removing the following:
+        with open(os_path_join(qa_keyword_path, default_filename), 'r') as f:
+            temp['default'] = json.load(f)
+
+        # combining all keyword dictionaries to the configurations with the 
+        # respective project ids and version ids, including the default ones:
         
-        for key in jsonObj.keys():
-            if key in config.keys():
-                new_option = config[key] 
+        for project_id in config.keys():
+
+            # TODO: make project_id and version_id mandatory removing the following:
+            if project_id == 'default':
+                continue
+
+            for version_id in config[project_id].keys():
+
+                for key in temp[project_id][version_id].keys():
+                    if key in config[project_id][version_id].keys():
+                        new_option = config[project_id][version_id][key] 
+                    else:
+                        new_option = "what is the " + key + "?"  
+                    extra_option = "none, "
+                    for token in temp[project_id][version_id][key]:
+                        extra_option += token + ", "
+                    extra_option = extra_option.strip().strip(',')
+                    config[project_id][version_id][key] = [new_option, extra_option]
+
+        # TODO: make project_id and version_id mandatory removing the following:
+        for key in temp['default'].keys():
+            if key in config['default'].keys():
+                new_option = config['default'][key] 
             else:
                 new_option = "what is the " + key + "?"  
             extra_option = "none, "
-            
-            for token in jsonObj[key]:
+            for token in temp['default'][key]:
                 extra_option += token + ", "
             extra_option = extra_option.strip().strip(',')
-            config[key] = [new_option, extra_option]
+            config['default'][key] = [new_option, extra_option]
 
         return config
 
@@ -183,7 +272,7 @@ if __name__ == '__main__':
                     "subject1":["care"]
                 }
 
-    qa_config_path = "./question_asker_config.json"
+    qa_config_path = "./question_asker_config"
     QAsker = QuestionAsker(qa_config_path)
     print(QAsker.process(1,boosting_tokens,query))
     # Add options
@@ -236,6 +325,10 @@ if __name__ == '__main__':
                     "Vaccine":["polio"],
                     "Who is writing this":["child"],
                 }
+
+    qa_config_path = "./question_asker_test_config"
+    extractor_json_path = \
+        "../../WHO-FAQ-Keyword-Engine/keyword_config"
 
     QAsker = QuestionAsker(qa_config_path, show_options=True, \
         qa_keyword_path = extractor_json_path, \
