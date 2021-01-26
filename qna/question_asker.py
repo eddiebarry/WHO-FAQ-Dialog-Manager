@@ -179,89 +179,244 @@ class QuestionAsker:
 if __name__ == '__main__':
     # Do not add options
 
-    # Set up a configuration of which fields must be included
-    # Along with what to say when no keyword from the field is detected
-    config = {
-        "must" :["Subject 2 - Vaccination / General", "Vaccine", \
-            "Who is writing this"],
-        "Subject 2 - Vaccination / General" : \
-            "What topic is this most related to ?",
-        "Vaccine" : "What vaccine are you talking about ?",
-        "Who is writing this" : "For whom is this question being asked ?",
-        "Catch All": "Is there any additional information you could help us with ?"
+    # definition of variables for different test cases:
+
+    test_configs = {
+        0: {
+            "must" :["Subject 2 - Vaccination / General", "Vaccine", \
+                "Who is writing this"],
+            "Subject 2 - Vaccination / General" : \
+                "What topic is this most related to ?",
+            "Vaccine" : "What vaccine are you talking about ?",
+            "Who is writing this" : "For whom is this question being asked ?",
+            "Catch All": "Is there any additional information you could help us with ?"
+        },
+        1: {
+            "must" :["Subject 2 - Vaccination / General", "Vaccine", \
+                "Who is writing this"],
+            "Subject 2 - Vaccination / General" : \
+                "What topic is this most related to ?",
+            "Vaccine" : "What vaccine are you talking about ?",
+            "Who is writing this" : "For whom is this question being asked ?",
+            "Catch All": "Is there any additional information you could help us with ?"
+        },
+        2: {
+            "must" :["Subject 2 - Vaccination / General", "Vaccine", \
+                "Who is writing this"],
+            "Subject 2 - Vaccination / General" : \
+                "What topic is this most related to ?",
+            "Vaccine" : "What vaccine are you talking about ?",
+            "Who is writing this" : "For whom is this question being asked ?",
+            "Catch All": "Is there any additional information you could help us with ?"
+        }
     }
-
-    with open('./question_asker_config.json', \
-        'w') as json_file:
-        json.dump(config, json_file, indent=4) 
-    
-    query = "Is it safe for my child to get Pneumonia ?"
-    boosting_tokens = {
-                    "keywords":["love"],    
-                    "subject1":["care"]
-                }
-
-    qa_config_path = "./question_asker_config"
-    QAsker = QuestionAsker(qa_config_path)
-    print(QAsker.process(1,boosting_tokens,query))
-    # Add options
-
-    query = "Is it safe for my child to get Polio ?"
-    print("This is the predicted questions")
-    extractor_json_path = \
-        "../../WHO-FAQ-Keyword-Engine/keyword_config/curated_keywords_1500.json"
-    
-    use_question_predicter_config = [
+    test_qa_config_paths = {
+        0: '../../data/question_asker_config_for_unit_tests',
+        1: '../../data/question_asker_config_for_unit_tests',
+        2: '../../data/question_asker_config_for_unit_tests'
+    }
+    test_queries = {
+        0: "Is it safe for my child to get Pneumonia ?",
+        1: "Is it safe for my child to get Polio ?",
+        2: "Is it safe for my child to get Polio ?"
+    }
+    test_boosting_token_dicts = {
+        0: {
+            "keywords":["love"],    
+            "subject1":["care"]
+        },
+        1: {
+            "keywords":["love"],    
+            "subject1":["care"]
+        },
+        2: {
+            "Subject 2 - Vaccination / General":["safety"],    
+            "Vaccine":["polio"],
+            "Who is writing this":["child"],
+        }
+    }
+    test_show_options = {
+        0: False,
+        1: True,
+        2: True
+    }
+    test_qa_keyword_paths = {
+        0: None,
+        1: '../../data/unique_keywords',
+        2: '../../data/unique_keywords'
+    }
+    test_question_predicter_configs = {
+        0: None,
+        1: [
+            False,               #use question predicter
+            "./models.txt",     #model path
+            "./vectoriser.txt"  #vectoriser path
+        ],
+        2: [
             True,               #use question predicter
             "./models.txt",     #model path
             "./vectoriser.txt"  #vectoriser path
         ]
-    QAsker = QuestionAsker(qa_config_path, show_options=True, \
-        qa_keyword_path = extractor_json_path, \
-        use_question_predicter_config=use_question_predicter_config)
-    print(QAsker.process(2,boosting_tokens,query))
-
-    # Write test for catch all
-    print('$'*80)
-    print("This is the catch all")
-    config = {
-        "must" :["Subject 2 - Vaccination / General", "Vaccine", \
-            "Who is writing this"],
-        "Subject 2 - Vaccination / General" : \
-            "What topic is this most related to ?",
-        "Vaccine" : "What vaccine are you talking about ?",
-        "Who is writing this" : "For whom is this question being asked ?",
-        "Catch All": "Is there any additional information you could help us with ?"
     }
-    qa_config_path = "./question_asker_test_config.json"
+    test_user_ids = {
+        0: 1,
+        1: 2,
+        2: 3
+    }
+    test_project_ids = {
+        0: '999',
+        1: '999',
+        2: '999'
+    }
+    test_version_ids = {
+        0: '0',
+        1: '0',
+        2: '0'
+    }
 
-    with open(qa_config_path, \
-        'w') as json_file:
-        json.dump(config, json_file, indent=4) 
+    assert test_configs.keys() == test_qa_config_paths.keys() == \
+        test_queries.keys() == test_boosting_token_dicts.keys() == \
+        test_show_options.keys() == test_qa_keyword_paths.keys() == \
+        test_question_predicter_configs.keys() == test_user_ids.keys() == \
+        test_project_ids.keys() == test_version_ids.keys()
+
+    # for each unit test:
+    for exampe_id in test_configs.keys():
+
+        print('-' * 12, 'test n.', str(exampe_id), '-' * 12)
+
+        # variables for the considered test:
+
+        config = test_configs[exampe_id]
+        qa_config_path = test_qa_config_paths[exampe_id]
+        query = test_queries[exampe_id]
+        boosting_tokens = test_boosting_token_dicts[exampe_id]
+        show_options = test_show_options[exampe_id]
+        extractor_json_path = test_qa_keyword_paths[exampe_id]
+        use_question_predicter_config = \
+            test_question_predicter_configs[exampe_id]
+        user_id = test_user_ids[exampe_id]
+        project_id = test_project_ids[exampe_id]
+        version_id = test_version_ids[exampe_id]
+
+        # writing test 
+
+        filename = project_id + '_' + version_id + '_' + 'unit_test_config.json'
+        with open(os_path_join(qa_config_path, filename), 'w')\
+            as f:
+            json.dump(config, f, indent=4)
+
+        QAsker = QuestionAsker(
+            config_path=qa_config_path,
+            show_options=show_options,
+            qa_keyword_path=extractor_json_path,
+            use_question_predicter_config=use_question_predicter_config
+        )
+
+        print(
+            'result:\n',
+            QAsker.process(
+                user_id=user_id,
+                keywords=boosting_tokens,
+                project_id=project_id,
+                version_id=version_id,
+                user_input=query
+            )
+        )
+
+    print('-' * 12, 'end of tests', '-' * 12)
+
+######################################################################################################
+######################################################################################################
+######################################################################################################
+######################################################################################################
+######################################################################################################
+######################################################################################################
+
+
+    # # Set up a configuration of which fields must be included
+    # # Along with what to say when no keyword from the field is detected
+    # config = {
+    #     "must" :["Subject 2 - Vaccination / General", "Vaccine", \
+    #         "Who is writing this"],
+    #     "Subject 2 - Vaccination / General" : \
+    #         "What topic is this most related to ?",
+    #     "Vaccine" : "What vaccine are you talking about ?",
+    #     "Who is writing this" : "For whom is this question being asked ?",
+    #     "Catch All": "Is there any additional information you could help us with ?"
+    # }
+
+    # with open('./question_asker_config.json', \
+    #     'w') as json_file:
+    #     json.dump(config, json_file, indent=4) 
     
-    query = "Is it safe for my child to get Polio ?"
-    extractor_json_path = \
-        "../../WHO-FAQ-Keyword-Engine/keyword_config/curated_keywords_1500.json"
+    # query = "Is it safe for my child to get Pneumonia ?"
+    # boosting_tokens = {
+    #                 "keywords":["love"],    
+    #                 "subject1":["care"]
+    #             }
+
+    # qa_config_path = "./question_asker_config"
+    # QAsker = QuestionAsker(qa_config_path)
+    # print(QAsker.process(1,boosting_tokens,query))
+    # # Add options
+
+    # query = "Is it safe for my child to get Polio ?"
+    # print("This is the predicted questions")
+    # extractor_json_path = \
+    #     "../../WHO-FAQ-Keyword-Engine/keyword_config/curated_keywords_1500.json"
     
-    use_question_predicter_config = [
-            False,               #use question predicter
-            "./models.txt",     #model path
-            "./vectoriser.txt"  #vectoriser path
-        ]
+    # use_question_predicter_config = [
+    #         True,               #use question predicter
+    #         "./models.txt",     #model path
+    #         "./vectoriser.txt"  #vectoriser path
+    #     ]
+    # QAsker = QuestionAsker(qa_config_path, show_options=True, \
+    #     qa_keyword_path = extractor_json_path, \
+    #     use_question_predicter_config=use_question_predicter_config)
+    # print(QAsker.process(2,boosting_tokens,query))
 
-    boosting_tokens = {
-                    "Subject 2 - Vaccination / General":["safety"],    
-                    "Vaccine":["polio"],
-                    "Who is writing this":["child"],
-                }
+    # # Write test for catch all
+    # print('$'*80)
+    # print("This is the catch all")
+    # config = {
+    #     "must" :["Subject 2 - Vaccination / General", "Vaccine", \
+    #         "Who is writing this"],
+    #     "Subject 2 - Vaccination / General" : \
+    #         "What topic is this most related to ?",
+    #     "Vaccine" : "What vaccine are you talking about ?",
+    #     "Who is writing this" : "For whom is this question being asked ?",
+    #     "Catch All": "Is there any additional information you could help us with ?"
+    # }
+    # qa_config_path = "./question_asker_test_config.json"
 
-    qa_config_path = "./question_asker_test_config"
-    extractor_json_path = \
-        "../../WHO-FAQ-Keyword-Engine/keyword_config"
-
-    QAsker = QuestionAsker(qa_config_path, show_options=True, \
-        qa_keyword_path = extractor_json_path, \
-        use_question_predicter_config=use_question_predicter_config)
+    # with open(qa_config_path, \
+    #     'w') as json_file:
+    #     json.dump(config, json_file, indent=4) 
     
-    print("This is the predicted questions")
-    print(QAsker.process(3,boosting_tokens,query))
+    # query = "Is it safe for my child to get Polio ?"
+    # extractor_json_path = \
+    #     "../../WHO-FAQ-Keyword-Engine/keyword_config/curated_keywords_1500.json"
+    
+    # use_question_predicter_config = [
+    #         False,               #use question predicter
+    #         "./models.txt",     #model path
+    #         "./vectoriser.txt"  #vectoriser path
+    #     ]
+
+    # boosting_tokens = {
+    #                 "Subject 2 - Vaccination / General":["safety"],    
+    #                 "Vaccine":["polio"],
+    #                 "Who is writing this":["child"],
+    #             }
+
+    # qa_config_path = "./question_asker_test_config"
+    # extractor_json_path = \
+    #     "../../WHO-FAQ-Keyword-Engine/keyword_config"
+
+    # QAsker = QuestionAsker(qa_config_path, show_options=True, \
+    #     qa_keyword_path = extractor_json_path, \
+    #     use_question_predicter_config=use_question_predicter_config)
+    
+    # print("This is the predicted questions")
+    # print(QAsker.process(3,boosting_tokens,query))
