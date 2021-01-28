@@ -70,20 +70,20 @@ class QuestionAsker:
         # First we check if the user has already been asked a question
         if user_id in self.questions_asked.keys():
             must = self.questions_asked[user_id]
-            print("using previous config")
+            # print("using previous config")
         else:
-            print(self.use_question_predicter, "is the use question prediction")
+            # print(self.use_question_predicter, "is the use question prediction")
             if self.use_question_predicter:
                 must = self.question_predicter.\
                     get_must_questions(user_input)
-                print("using predicted config")
+                # print("using predicted config")
             else:                    
                 must = copy.deepcopy(self.config[project_id][version_id]["must"])                    
-                print("using default config")
+                # print("using default config")
             must.append("Catch All")
 
         self.questions_asked[user_id] = must
-        print("Questions that must be asked before keyword search are : ", must)
+        # print("Questions that must be asked before keyword search are : ", must)
 
         # check if all keywords in must are present in the keywords that 
         # are detected so far
@@ -118,7 +118,7 @@ class QuestionAsker:
         
         #  Update so that question is not asked again
         self.questions_asked[user_id] = must
-        print("Questions that must be asked after keyword search are : ", must)
+        # print("Questions that must be asked after keyword search are : ", must)
         
         # if not satisfied, add question in response
         resp = {
