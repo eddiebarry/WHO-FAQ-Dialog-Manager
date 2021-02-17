@@ -62,7 +62,8 @@ class QuestionAsker:
                 self.question_predicter = QuestionPredicter(\
                     model_path, vectoriser_path)
 
-    def process(self, must, user_id, keywords, project_id, version_id, user_input=None):
+    # def process(self, must, user_id, keywords, project_id, version_id, user_input=None):
+    def process(self, user_id, keywords, project_id, version_id, user_input=None):    
         """
         Given a user ID, identifies which question must be asked,
         and adds them to what to say
