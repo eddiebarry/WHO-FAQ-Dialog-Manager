@@ -62,26 +62,25 @@ class QuestionAsker:
                 self.question_predicter = QuestionPredicter(\
                     model_path, vectoriser_path)
 
-    # def process(self, must, user_id, keywords, project_id, version_id, user_input=None):
-    def process(self, user_id, keywords, project_id, version_id, user_input=None):    
+    def process(self, must, user_id, keywords, project_id, version_id, user_input=None):
         """
         Given a user ID, identifies which question must be asked,
         and adds them to what to say
         """
         # First we check if the user has already been asked a question
-        if user_id in self.questions_asked.keys():
-            must = self.questions_asked[user_id]
-            # print("using previous config")
-        else:
-            # print(self.use_question_predicter, "is the use question prediction")
-            if self.use_question_predicter:
-                must = self.question_predicter.\
-                    get_must_questions(user_input)
-                # print("using predicted config")
-            else:                    
-                must = copy.deepcopy(self.config[project_id][version_id]["must"])                    
-                # print("using default config")
-            must.append("Catch All")
+        # if user_id in self.questions_asked.keys():
+        #     must = self.questions_asked[user_id]
+        #     # print("using previous config")
+        # else:
+        #     # print(self.use_question_predicter, "is the use question prediction")
+        #     if self.use_question_predicter:
+        #         must = self.question_predicter.\
+        #             get_must_questions(user_input)
+        #         # print("using predicted config")
+        #     else:                    
+        #         must = copy.deepcopy(self.config[project_id][version_id]["must"])                    
+        #         # print("using default config")
+        #     must.append("Catch All")
 
         self.questions_asked[user_id] = must
         # print("Questions that must be asked before keyword search are : ", must)
@@ -118,7 +117,7 @@ class QuestionAsker:
                 break
         
         # #  Update so that question is not asked again
-        self.questions_asked[user_id] = must
+        # self.questions_asked[user_id] = must
         # print("Questions that must be asked after keyword search are : ", must)
         
         # if not satisfied, add question in response
@@ -142,7 +141,7 @@ class QuestionAsker:
         # if not ask_more_question:
         #     self.questions_asked.pop(user_id)
 
-        return not ask_more_question, resp, must
+        return not ask_more_question, resp
 
     def add_options(self, config, qa_keyword_path):
         """
