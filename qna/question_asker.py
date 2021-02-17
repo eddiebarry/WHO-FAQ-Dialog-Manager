@@ -141,7 +141,7 @@ class QuestionAsker:
         # if not ask_more_question:
         #     self.questions_asked.pop(user_id)
 
-        return not ask_more_question, resp
+        return not ask_more_question, resp, must
 
     def add_options(self, config, qa_keyword_path):
         """
